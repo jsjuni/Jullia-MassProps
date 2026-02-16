@@ -11,15 +11,15 @@ module MassProps
 
             center_mass = [row.Cx, row.Cy, row.Cz],
 
-            poi_conv = row.POIconv,
-
             inertia = [             row.Ixx, poi_factor * row.Ixy, poi_factor * row.Ixz,
                        poi_factor * row.Ixy,        row.Iyy, poi_factor * row.Iyz,
                        poi_factor * row.Ixz, poi_factor * row.Iyz,              row.Izz
             ],
 
+            poi_conv = row.POIconv,
             point = row.Ipoint
         )
+
     end
 
     get_mass_props_unc(table, id) = begin
@@ -38,5 +38,14 @@ module MassProps
     end
 
     get_mass_props_and_unc(table, id) = merge(get_mass_props(table, id), get_mass_props_unc(table, id))
-    
+
+    set_mass_props(table, id, mp) = begin
+        
+        cm = mp.center_mass
+        it = mp.inertia
+
+        poi_factor = mp.poi_conv == "+" ? -1.0 : (mp.poi_conv == "-" ? 1.0 : error("invalid POI convention"))
+
+        table
+    end
 end

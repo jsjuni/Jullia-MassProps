@@ -28,12 +28,21 @@ using TestItems
                     -row_pos.Ixz, -row_pos.Iyz,  row_pos.Izz
                     ]
     poi_conv_pos = row_pos.POIconv
+    point_pos = row_pos.Ipoint
+
     sigma_mass_pos = row_pos.sigma_mass
     sigma_center_mass_pos = [row_pos.sigma_Cx, row_pos.sigma_Cy, row_pos.sigma_Cz]
     sigma_inertia_pos = [row_pos.sigma_Ixx, row_pos.sigma_Ixy, row_pos.sigma_Ixz,
                           row_pos.sigma_Ixy, row_pos.sigma_Iyy, row_pos.sigma_Iyz,
                           row_pos.sigma_Ixz, row_pos.sigma_Iyz, row_pos.sigma_Izz
                         ]
+    mp_pos = (
+        mass = mass_pos,
+        center_mass = center_mass_pos,
+        inertia = inertia_pos,
+        poi_conv = poi_conv_pos,
+        point = point_pos
+    )
 
     id_neg = "C.1.2.2.3.2.1.1"
     row_neg = mp_table[findfirst(mp_table.id .== id_neg), :]
@@ -44,6 +53,8 @@ using TestItems
                      row_neg.Ixz,  row_neg.Iyz,  row_neg.Izz
                     ]
     poi_conv_neg = row_neg.POIconv
+    point_neg = row_neg.Ipoint
+
     sigma_mass_neg = row_neg.sigma_mass
     sigma_center_mass_neg = [row_neg.sigma_Cx, row_neg.sigma_Cy, row_neg.sigma_Cz]
     sigma_inertia_neg = [row_neg.sigma_Ixx, row_neg.sigma_Ixy, row_neg.sigma_Ixz,
@@ -51,6 +62,7 @@ using TestItems
                           row_neg.sigma_Ixz, row_neg.sigma_Iyz, row_neg.sigma_Izz
                         ]
 
+    target_id = "C.1"
 end
 
 @testitem "get_mass_props() for positive convention" setup = [Setup] begin
@@ -66,6 +78,8 @@ end
 
     @test result.poi_conv == poi_conv_pos
     @test result.poi_conv == "+"
+
+    @test result.point == point_pos
 
     @test result.inertia isa Vector{Float64}
     @test result.inertia == inertia_pos
@@ -85,6 +99,8 @@ end
 
     @test result.poi_conv == poi_conv_neg
     @test result.poi_conv == "-"
+
+    @test result.point == point_neg
 
     @test result.inertia isa Vector{Float64}
     @test result.inertia == inertia_neg
@@ -128,4 +144,9 @@ end
 
     @test result == merge(mp, uc)
 
+end
+
+@testitem "set_mass_props() for positive convention" setup = [Setup] begin
+    ot = MassProps.set_mass_props(mp_table, target_id, mp_pos)
+    
 end
