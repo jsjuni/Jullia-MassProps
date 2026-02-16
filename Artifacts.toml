@@ -1,0 +1,6 @@
+[mass_props_data]
+git-tree-sha1 = "f466bf3331ec40f145f89ee59d5b76fda425e946"
+
+    [[mass_props_data.download]]
+    sha256 = "1c2962630c253e57a9075adc7b70a007eec2c09d07d12b1515567cfc3093d9ea"
+    url = "https://gist.github.com/jsjuni/cc1556f1b223368c610683fe2c5ebc1a/raw/f466bf3331ec40f145f89ee59d5b76fda425e946.tar.gz"
