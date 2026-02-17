@@ -344,7 +344,7 @@ end
     
 end
 
-@testitem "combine_mass_props_and_unc() for non-point masses" setup = [Setup] begin
+@testitem "combine_mass_props_unc() for non-point masses" setup = [Setup] begin
 
     amp = MassProps.get_mass_props_and_unc(sawe_table, "Combined")
 
@@ -353,7 +353,8 @@ end
     
     mpuc = MassProps.combine_mass_props_unc(mpul, amp)
 
-    rtol = 10^-2 # sawe published uncertainties are trunated
-    @test isapprox(mpuc.sigma_mass, amp.sigma_mass, rtol = rtol)
-    @test isapprox(mpuc.sigma_center_mass, amp.sigma_center_mass, rtol = rtol)  
+    @test isapprox(mpuc.sigma_mass, amp.sigma_mass, rtol = 1e-5)
+    @test isapprox(mpuc.sigma_center_mass, amp.sigma_center_mass, rtol = 5e-3)
+    @test isapprox(mpuc.sigma_inertia, amp.sigma_inertia, rtol = 2.1e-3) # published values are not accurate
+
 end

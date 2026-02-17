@@ -120,11 +120,28 @@ module MassProps
             )
         ) ./ amp.mass
 
+        sigma_inertia = sqrt.(
+            sum(
+                map(mpu -> begin
+                    d = mpu.center_mass - amp.center_mass
+                    P = d .* mpu.sigma_center_mass'
+                    p = diag(P)
+                    Q = d .* d'
+
+                    M1 = P  - diagm(p - 2 .* [p[2]; p[1]; p[1]])
+                    M2 = P' - diagm(p - 2 .* [p[3]; p[3]; p[2]])
+                    M3 = Q  - tr(Q) * I
+                    M4 = mpu.mass^2 .* (M1.^2 .+ M2.^2) .+ (mpu.sigma_mass .* M3).^2
+                    mpu.point ? M4 : mpu.sigma_inertia.^2 .+ M4
+                end, mpul)
+            )
+        )
+
         merge(amp,
             (
                 sigma_mass = sigma_mass,
                 sigma_center_mass = sigma_center_mass,
-                sigma_inertia = zeros(3, 3) # TODO: implement inertia uncertainty combination
+                sigma_inertia = sigma_inertia
             )
         )
 
