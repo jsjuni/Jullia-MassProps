@@ -1,6 +1,7 @@
 module MassProps
 
     using RollupTree
+    using LinearAlgebra
 
     get_mass_props(table, id) = begin
         row = RollupTree.df_get_row_by_id(table, id)
@@ -9,11 +10,11 @@ module MassProps
         (
             mass = row.mass,
 
-            center_mass = [row.Cx, row.Cy, row.Cz],
+            center_mass = [row.Cx; row.Cy; row.Cz],
 
-            inertia = [             row.Ixx, poi_factor * row.Ixy, poi_factor * row.Ixz,
-                       poi_factor * row.Ixy,        row.Iyy, poi_factor * row.Iyz,
-                       poi_factor * row.Ixz, poi_factor * row.Iyz,              row.Izz
+            inertia = [             row.Ixx poi_factor * row.Ixy poi_factor * row.Ixz;
+                       poi_factor * row.Ixy              row.Iyy poi_factor * row.Iyz;
+                       poi_factor * row.Ixz poi_factor * row.Iyz              row.Izz
             ],
 
             poi_conv = row.POIconv,
@@ -28,11 +29,11 @@ module MassProps
         (
             sigma_mass = row.sigma_mass,
 
-            sigma_center_mass = [row.sigma_Cx, row.sigma_Cy, row.sigma_Cz],
+            sigma_center_mass = [row.sigma_Cx; row.sigma_Cy; row.sigma_Cz],
 
-            sigma_inertia = [row.sigma_Ixx, row.sigma_Ixy, row.sigma_Ixz,
-                             row.sigma_Ixy, row.sigma_Iyy, row.sigma_Iyz,
-                             row.sigma_Ixz, row.sigma_Iyz, row.sigma_Izz
+            sigma_inertia = [row.sigma_Ixx row.sigma_Ixy row.sigma_Ixz;
+                             row.sigma_Ixy row.sigma_Iyy row.sigma_Iyz;
+                             row.sigma_Ixz row.sigma_Iyz row.sigma_Izz
             ]
         )
     end
@@ -42,10 +43,29 @@ module MassProps
     set_mass_props(table, id, mp) = begin
         
         cm = mp.center_mass
-        it = mp.inertia
+        it = (mp.inertia + transpose(mp.inertia)) / 2
 
         poi_factor = mp.poi_conv == "+" ? -1.0 : (mp.poi_conv == "-" ? 1.0 : error("invalid POI convention"))
 
-        table
+        values = (
+            mass = mp.mass,
+
+            Cx = cm[1],
+            Cy = cm[2],
+            Cz = cm[3],
+
+            Ixx = it[1, 1],
+            Iyy = it[2, 2],
+            Izz = it[3, 3],
+
+            Ixy = poi_factor * it[1, 2],
+            Ixz = poi_factor * it[1, 3],
+            Iyz = poi_factor * it[2, 3],
+
+            Ipoint = mp.point,
+            POIconv = mp.poi_conv
+        )
+
+        RollupTree.df_set_row_by_id(table, id, values)
     end
 end
