@@ -106,4 +106,27 @@ module MassProps
             point = false
         )
     end
+
+    combine_mass_props_unc(mpul, amp) = begin
+
+        sigma_mass = sqrt(sum(mpu.sigma_mass^2 for mpu in mpul))
+
+        sigma_center_mass = sqrt.(
+            sum(
+                (
+                    (mpu.mass .* mpu.sigma_center_mass).^2 .+
+                    (mpu.sigma_mass .* (mpu.center_mass - amp.center_mass)).^2
+                ) for mpu in mpul
+            )
+        ) ./ amp.mass
+
+        merge(amp,
+            (
+                sigma_mass = sigma_mass,
+                sigma_center_mass = sigma_center_mass,
+                sigma_inertia = zeros(3, 3) # TODO: implement inertia uncertainty combination
+            )
+        )
+
+    end
 end

@@ -5,19 +5,36 @@ using TestItems
     using DataFrames
     using CSV
     using MassProps
+    using MetaGraphsNext
+    using Graphs
 
     data_dir = artifact"mass_props_data"
 
     read_data(filename) = CSV.read(joinpath(data_dir, filename), DataFrame; missingstring = "NA",delim = "\t")
 
+    tree_from_edgelist(el, id, pid) = begin
+        tree = MetaGraphsNext.MetaGraph(Graphs.SimpleDiGraph(), label_type = String)
+        for row in eachrow(el)
+            Graphs.add_vertex!(tree, row[id])
+            if !ismissing(row[pid])
+                Graphs.add_vertex!(tree, row[pid])
+                Graphs.add_edge!(tree, row[id], row[pid])
+            end
+        end
+        tree
+    end
+
     mp_table = read_data("mp_table.tsv")
-    mp_edges = read_data
+    mp_edges = read_data("mp_edges.tsv")
+    mp_tree = tree_from_edgelist(mp_edges, "child", "parent")
     
     sawe_table = read_data("sawe_table.tsv")
     sawe_edges = read_data("sawe_edges.tsv")
+    sawe_tree = tree_from_edgelist(sawe_edges, "child", "parent")
     
     test_table = read_data("test_table.tsv")
     test_edges = read_data("test_edges.tsv")
+    test_tree = tree_from_edgelist(test_edges, "id", "parent")
 
     id_pos = "C.1.2.2.3.1.2.3"
     row_pos = mp_table[findfirst(mp_table.id .== id_pos), :]
@@ -325,4 +342,18 @@ end
 
     @test mpc.point == false
     
+end
+
+@testitem "combine_mass_props_and_unc() for non-point masses" setup = [Setup] begin
+
+    amp = MassProps.get_mass_props_and_unc(sawe_table, "Combined")
+
+    leaves = MetaGraphsNext.inneighbor_labels(sawe_tree, "Combined")
+    mpul = map(id -> MassProps.get_mass_props_and_unc(sawe_table, id), leaves)
+    
+    mpuc = MassProps.combine_mass_props_unc(mpul, amp)
+
+    rtol = 10^-2 # sawe published uncertainties are trunated
+    @test isapprox(mpuc.sigma_mass, amp.sigma_mass, rtol = rtol)
+    @test isapprox(mpuc.sigma_center_mass, amp.sigma_center_mass, rtol = rtol)  
 end
