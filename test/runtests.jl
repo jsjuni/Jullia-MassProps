@@ -11,13 +11,13 @@ using TestItems
     read_data(filename) = CSV.read(joinpath(data_dir, filename), DataFrame; missingstring = "NA",delim = "\t")
 
     mp_table = read_data("mp_table.tsv")
-    mp_edges = CSV.read(joinpath(data_dir, "mp_edges.tsv"), DataFrame; delim = "\t")
+    mp_edges = read_data
     
-    sawe_table = CSV.read(joinpath(data_dir, "sawe_table.tsv"), DataFrame; delim = "\t")
-    sawe_edges = CSV.read(joinpath(data_dir, "sawe_edges.tsv"), DataFrame; delim = "\t")
+    sawe_table = read_data("sawe_table.tsv")
+    sawe_edges = read_data("sawe_edges.tsv")
     
-    test_table = CSV.read(joinpath(data_dir, "test_table.tsv"), DataFrame; delim = "\t")
-    test_edges = CSV.read(joinpath(data_dir, "test_edges.tsv"), DataFrame; delim = "\t")
+    test_table = read_data("test_table.tsv")
+    test_edges = read_data("test_edges.tsv")
 
     id_pos = "C.1.2.2.3.1.2.3"
     row_pos = mp_table[findfirst(mp_table.id .== id_pos), :]
@@ -310,4 +310,19 @@ end
     @test row.sigma_Ixz == mpu_neg.sigma_inertia[1, 3]
     @test row.sigma_Iyz == mpu_neg.sigma_inertia[2, 3]
 
+end
+
+@testitem "combine_mass_props() for non-point masses" setup = [Setup] begin
+
+    leaves = collect(test_table[map(!ismissing, test_table[:, :mass]), :id])
+    mpl = map(id -> MassProps.get_mass_props(test_table, id), leaves)
+
+    mpc = MassProps.combine_mass_props(mpl)
+
+    @test mpc.mass == 21.0
+    @test mpc.center_mass == [0.0, 0.0, 0.0]
+    @test isapprox(mpc.inertia, [144.0 -4.8 -24.8; -4.8 144.0 -23.2; -24.8 -23.2 139.0])
+
+    @test mpc.point == false
+    
 end

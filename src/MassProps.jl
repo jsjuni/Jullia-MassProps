@@ -91,4 +91,19 @@ module MassProps
 
     set_mass_props_and_unc(table, id, mpu) = set_mass_props_unc(set_mass_props(table, id, mpu), id, mpu)
 
+    combine_mass_props(mpl) = begin
+        
+        mass = sum(mp.mass for mp in mpl)
+
+        center_mass = sum(mp.mass .* mp.center_mass for mp in mpl) ./ mass
+
+        inertia = sum(mp.inertia .+ mp.mass .* (dot(mp.center_mass, mp.center_mass) * I - mp.center_mass * transpose(mp.center_mass)) for mp in mpl)
+
+        (
+            mass = mass,
+            center_mass = center_mass,
+            inertia = inertia,
+            point = false
+        )
+    end
 end
