@@ -44,6 +44,12 @@ using TestItems
         point = point_pos
     )
 
+    mpu_pos = (
+        sigma_mass = sigma_mass_pos,
+        sigma_center_mass = sigma_center_mass_pos,
+        sigma_inertia = sigma_inertia_pos
+    )
+
     id_neg = "C.1.2.2.3.2.1.1"
     row_neg = mp_table[findfirst(mp_table.id .== id_neg), :]
     mass_neg = row_neg.mass
@@ -62,7 +68,7 @@ using TestItems
                           row_neg.sigma_Ixz row_neg.sigma_Iyz row_neg.sigma_Izz
                         ]
 
-        mp_neg = (
+     mp_neg = (
         mass = mass_neg,
         center_mass = center_mass_neg,
         inertia = inertia_neg,
@@ -70,7 +76,13 @@ using TestItems
         point = point_neg
     )
 
-target_id = "C.1"
+   mpu_neg = (
+        sigma_mass = sigma_mass_neg,
+        sigma_center_mass = sigma_center_mass_neg,
+        sigma_inertia = sigma_inertia_neg
+    )
+
+    target_id = "C.1"
 end
 
 @testitem "get_mass_props() for positive convention" setup = [Setup] begin
@@ -196,4 +208,106 @@ end
 
     @test row.Ipoint == mp_neg.point
     @test row.POIconv == mp_neg.poi_conv
+end
+
+@testitem "set_mass_props() with invalid POI convention" setup = [Setup] begin
+    mp_invalid = merge(mp_pos, (poi_conv = "invalid",))
+    @test_throws ErrorException MassProps.set_mass_props(mp_table, target_id, mp_invalid)
+end
+
+@testitem "set_mass_props_unc()" setup = [Setup] begin
+
+    ot = MassProps.set_mass_props_unc(mp_table, target_id, mpu_pos)
+    row = ot[findfirst(ot.id .== target_id), :]
+
+    @test row.sigma_mass == mpu_pos.sigma_mass
+
+    @test row.sigma_Cx == mpu_pos.sigma_center_mass[1]
+    @test row.sigma_Cy == mpu_pos.sigma_center_mass[2]
+    @test row.sigma_Cz == mpu_pos.sigma_center_mass[3]
+
+    @test row.sigma_Ixx == mpu_pos.sigma_inertia[1, 1]
+    @test row.sigma_Iyy == mpu_pos.sigma_inertia[2, 2]
+    @test row.sigma_Izz == mpu_pos.sigma_inertia[3, 3]
+
+    @test row.sigma_Ixy == mpu_pos.sigma_inertia[1, 2]
+    @test row.sigma_Ixz == mpu_pos.sigma_inertia[1, 3]
+    @test row.sigma_Iyz == mpu_pos.sigma_inertia[2, 3]
+
+end
+
+@testitem "set_mass_props_and_unc() for positive convention" setup = [Setup] begin
+
+    ot = MassProps.set_mass_props_and_unc(mp_table, target_id, merge(mp_pos, mpu_pos))
+    row = ot[findfirst(ot.id .== target_id), :]
+
+    @test row.mass == mp_pos.mass
+
+    @test row.Cx == mp_pos.center_mass[1]
+    @test row.Cy == mp_pos.center_mass[2]
+    @test row.Cz == mp_pos.center_mass[3]
+
+    @test row.Ixx == mp_pos.inertia[1, 1]
+    @test row.Iyy == mp_pos.inertia[2, 2]
+    @test row.Izz == mp_pos.inertia[3, 3]
+
+    @test row.Ixy == -mp_pos.inertia[1, 2]
+    @test row.Ixz == -mp_pos.inertia[1, 3]
+    @test row.Iyz == -mp_pos.inertia[2, 3]
+
+    @test row.Ipoint == mp_pos.point
+    @test row.POIconv == mp_pos.poi_conv
+
+    @test row.sigma_mass == mpu_pos.sigma_mass
+
+    @test row.sigma_Cx == mpu_pos.sigma_center_mass[1]
+    @test row.sigma_Cy == mpu_pos.sigma_center_mass[2]
+    @test row.sigma_Cz == mpu_pos.sigma_center_mass[3]
+
+    @test row.sigma_Ixx == mpu_pos.sigma_inertia[1, 1]
+    @test row.sigma_Iyy == mpu_pos.sigma_inertia[2, 2]
+    @test row.sigma_Izz == mpu_pos.sigma_inertia[3, 3]
+
+    @test row.sigma_Ixy == mpu_pos.sigma_inertia[1, 2]
+    @test row.sigma_Ixz == mpu_pos.sigma_inertia[1, 3]
+    @test row.sigma_Iyz == mpu_pos.sigma_inertia[2, 3]
+
+end
+
+@testitem "set_mass_props_and_unc() for negative convention" setup = [Setup] begin
+
+    ot = MassProps.set_mass_props_and_unc(mp_table, target_id, merge(mp_neg, mpu_neg))
+    row = ot[findfirst(ot.id .== target_id), :]
+
+    @test row.mass == mp_neg.mass
+
+    @test row.Cx == mp_neg.center_mass[1]
+    @test row.Cy == mp_neg.center_mass[2]
+    @test row.Cz == mp_neg.center_mass[3]
+
+    @test row.Ixx == mp_neg.inertia[1, 1]
+    @test row.Iyy == mp_neg.inertia[2, 2]
+    @test row.Izz == mp_neg.inertia[3, 3]
+
+    @test row.Ixy == mp_neg.inertia[1, 2]
+    @test row.Ixz == mp_neg.inertia[1, 3]
+    @test row.Iyz == mp_neg.inertia[2, 3]
+
+    @test row.Ipoint == mp_neg.point
+    @test row.POIconv == mp_neg.poi_conv
+
+    @test row.sigma_mass == mpu_neg.sigma_mass
+
+    @test row.sigma_Cx == mpu_neg.sigma_center_mass[1]
+    @test row.sigma_Cy == mpu_neg.sigma_center_mass[2]
+    @test row.sigma_Cz == mpu_neg.sigma_center_mass[3]
+
+    @test row.sigma_Ixx == mpu_neg.sigma_inertia[1, 1]
+    @test row.sigma_Iyy == mpu_neg.sigma_inertia[2, 2]
+    @test row.sigma_Izz == mpu_neg.sigma_inertia[3, 3]
+
+    @test row.sigma_Ixy == mpu_neg.sigma_inertia[1, 2]
+    @test row.sigma_Ixz == mpu_neg.sigma_inertia[1, 3]
+    @test row.sigma_Iyz == mpu_neg.sigma_inertia[2, 3]
+
 end

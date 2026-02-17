@@ -68,4 +68,27 @@ module MassProps
 
         RollupTree.df_set_row_by_id(table, id, values)
     end
+
+    set_mass_props_unc(table, id, mp_unc) = begin
+        values = (
+            sigma_mass = mp_unc.sigma_mass,
+
+            sigma_Cx = mp_unc.sigma_center_mass[1],
+            sigma_Cy = mp_unc.sigma_center_mass[2],
+            sigma_Cz = mp_unc.sigma_center_mass[3],
+
+            sigma_Ixx = mp_unc.sigma_inertia[1, 1],
+            sigma_Iyy = mp_unc.sigma_inertia[2, 2],
+            sigma_Izz = mp_unc.sigma_inertia[3, 3],
+
+            sigma_Ixy = mp_unc.sigma_inertia[1, 2],
+            sigma_Ixz = mp_unc.sigma_inertia[1, 3],
+            sigma_Iyz = mp_unc.sigma_inertia[2, 3]
+        )
+
+        RollupTree.df_set_row_by_id(table, id, values)
+    end
+
+    set_mass_props_and_unc(table, id, mpu) = set_mass_props_unc(set_mass_props(table, id, mpu), id, mpu)
+
 end
