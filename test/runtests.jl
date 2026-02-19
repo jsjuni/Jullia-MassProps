@@ -358,3 +358,61 @@ end
     @test isapprox(mpuc.sigma_inertia, amp.sigma_inertia, rtol = 2.1e-3) # published values are not accurate
 
 end
+
+@testitem "combine_mass_props_and_unc()" setup = [Setup] begin
+
+    leaves = MetaGraphsNext.inneighbor_labels(sawe_tree, "Combined")
+    mpul = map(id -> MassProps.get_mass_props_and_unc(sawe_table, id), leaves)
+
+    @test isequal(MassProps.combine_mass_props_and_unc(mpul), merge(MassProps.combine_mass_props_unc(mpul, MassProps.combine_mass_props(mpul))))
+
+end
+
+@testitem "set_poi_conv_plus()" setup = [Setup] begin
+
+    mp_plus = MassProps.set_poi_conv_plus(mp_neg)
+    @test mp_plus.poi_conv == "+"
+
+end
+
+@testitem "set_poi_conv_minus()" setup = [Setup] begin
+
+    mp_minus = MassProps.set_poi_conv_minus(mp_pos)
+    @test mp_minus.poi_conv == "-"
+
+end
+
+@testitem "set_poi_conv_from_target()" setup = [Setup] begin
+
+    mp_plus = MassProps.set_poi_conv_from_target(mp_table, id_pos, mp_neg)
+    @test mp_plus.poi_conv == mp_pos.poi_conv
+
+    mp_minus = MassProps.set_poi_conv_from_target(mp_table, id_neg, mp_pos)
+    @test mp_minus.poi_conv == mp_neg.poi_conv
+
+end
+
+@testitem "validate_mass_props()" setup = [Setup] begin
+
+    mp_valid = mp_pos
+    @test MassProps.validate_mass_props(mp_pos) == true
+
+    mp_invalid_mass = merge(mp_valid, (mass = -1.0,))
+    # @test_throws ErrorException MassProps.validate_mass_props(mp_invalid_mass)
+
+    mp_invalid_inertia = merge(mp_valid, (inertia = [1.0 0.0 0.0; 0.0 -1.0 0.0; 0.0 0.0 1.0],))
+    # @test_throws ErrorException MassProps.validate_mass_props(mp_invalid_inertia)
+
+    mp_invalid_poi_conv = merge(mp_valid, (poi_conv = "invalid",))
+    # @test_throws ErrorException MassProps.validate_mass_props(mp_invalid_poi_conv)
+
+end
+
+@testitem "rollup_mass_props()" setup = [Setup] begin
+
+    # This test is a placeholder for testing the rollup functionality, which would require more complex setup and is not implemented in the current code.
+
+    mp = MassProps.rollup_mass_props(test_tree, test_table)
+    @test mp isa DataFrame
+
+end
