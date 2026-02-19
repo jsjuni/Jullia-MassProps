@@ -410,9 +410,26 @@ end
 
 @testitem "rollup_mass_props()" setup = [Setup] begin
 
-    # This test is a placeholder for testing the rollup functionality, which would require more complex setup and is not implemented in the current code.
-
     mp = MassProps.rollup_mass_props(test_tree, test_table)
     @test mp isa DataFrame
+
+    top_row = mp[findfirst(mp.id .== "A.1"), :]
+
+    @test top_row.mass == 21.0
+
+    @test top_row.Cx == 0.0
+    @test top_row.Cy == 0.0
+    @test top_row.Cz == 0.0
+
+    @test top_row.Ixx == 144.0
+    @test top_row.Iyy == 160.0
+    @test top_row.Izz == 155.0
+    @test top_row.Ixy ≈ -4.8        # tiny discrepancy
+    @test top_row.Ixz == -24.8
+    @test top_row.Iyz == -23.2
+
+    @test top_row.POIconv == "-"
+
+    @test top_row.Ipoint == false
 
 end
