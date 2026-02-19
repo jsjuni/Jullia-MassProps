@@ -332,13 +332,14 @@ end
 @testitem "combine_mass_props() for non-point masses" setup = [Setup] begin
 
     leaves = collect(test_table[map(!ismissing, test_table[:, :mass]), :id])
+ 
     mpl = map(id -> MassProps.get_mass_props(test_table, id), leaves)
 
     mpc = MassProps.combine_mass_props(mpl)
 
     @test mpc.mass == 21.0
     @test mpc.center_mass == [0.0, 0.0, 0.0]
-    @test isapprox(mpc.inertia, [144.0 -4.8 -24.8; -4.8 144.0 -23.2; -24.8 -23.2 139.0])
+    @test mpc.inertia ≈ [144.0 -4.8 -24.8; -4.8 144.0 -23.2; -24.8 -23.2 139.0]
 
     @test mpc.point == false
     
@@ -370,14 +371,14 @@ end
 
 @testitem "set_poi_conv_plus()" setup = [Setup] begin
 
-    mp_plus = MassProps.set_poi_conv_plus(mp_neg)
+    mp_plus = MassProps.set_poi_conv_plus(nothing, nothing, mp_neg)
     @test mp_plus.poi_conv == "+"
 
 end
 
 @testitem "set_poi_conv_minus()" setup = [Setup] begin
 
-    mp_minus = MassProps.set_poi_conv_minus(mp_pos)
+    mp_minus = MassProps.set_poi_conv_minus(nothing, nothing, mp_pos)
     @test mp_minus.poi_conv == "-"
 
 end
@@ -386,7 +387,7 @@ end
 
     mp_plus = MassProps.set_poi_conv_from_target(mp_table, id_pos, mp_neg)
     @test mp_plus.poi_conv == mp_pos.poi_conv
-
+ 
     mp_minus = MassProps.set_poi_conv_from_target(mp_table, id_neg, mp_pos)
     @test mp_minus.poi_conv == mp_neg.poi_conv
 
@@ -422,9 +423,9 @@ end
     @test top_row.Cz == 0.0
 
     @test top_row.Ixx == 144.0
-    @test top_row.Iyy == 160.0
-    @test top_row.Izz == 155.0
-    @test top_row.Ixy ≈ -4.8        # tiny discrepancy
+    @test top_row.Iyy == 144.0
+    @test top_row.Izz == 139.0
+    @test top_row.Ixy == -4.8
     @test top_row.Ixz == -24.8
     @test top_row.Iyz == -23.2
 

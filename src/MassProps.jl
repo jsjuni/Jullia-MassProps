@@ -98,6 +98,12 @@ module MassProps
         center_mass = sum(mp.mass .* mp.center_mass for mp in mpl) ./ mass
 
         inertia = sum(mp.inertia .+ mp.mass .* (dot(mp.center_mass, mp.center_mass) * I - mp.center_mass * transpose(mp.center_mass)) for mp in mpl)
+        inertia = sum(
+            map(mp -> begin
+                d = mp.center_mass - center_mass
+                mp.inertia .+ mp.mass .* (dot(d, d) * I - d * transpose(d))
+            end, mpl)
+        )
 
         (
             mass = mass,
@@ -149,8 +155,8 @@ module MassProps
 
     combine_mass_props_and_unc(mpul) = combine_mass_props_unc(mpul, combine_mass_props(mpul))
 
-    set_poi_conv_plus(mp) = merge(mp, (poi_conv = "+",))
-    set_poi_conv_minus(mp) = merge(mp, (poi_conv = "-",))
+    set_poi_conv_plus(df, target, mp) = merge(mp, (poi_conv = "+",))
+    set_poi_conv_minus(df, target, mp) = merge(mp, (poi_conv = "-",))
     set_poi_conv_from_target(df, target, mp) = merge(mp, (poi_conv = RollupTree.df_get_by_id(df, target, :POIconv),))
 
     update_mass_props(df, target, sources, override = set_poi_conv_from_target) = begin
