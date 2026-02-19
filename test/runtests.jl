@@ -434,3 +434,46 @@ end
     @test top_row.Ipoint == false
 
 end
+
+@testitem "rollup_mass_props_and_unc()" setup = [Setup] begin
+
+    expected = sawe_table[findfirst(sawe_table.id .== "Combined"), :]
+
+    mp = MassProps.rollup_mass_props_and_unc(sawe_tree, sawe_table)
+    actual = mp[findfirst(mp.id .== "Combined"), :]
+
+    @test actual.mass == expected.mass
+
+    cm_rtol = 5e-2
+    @test isapprox(actual.Cx, expected.Cx, rtol = cm_rtol)
+    @test isapprox(actual.Cy, expected.Cy, rtol = cm_rtol)
+    @test isapprox(actual.Cz, expected.Cz, rtol = cm_rtol)
+
+    it_rtol = 5e-2
+    @test isapprox(actual.Ixx, expected.Ixx, rtol = it_rtol)
+    @test isapprox(actual.Iyy, expected.Iyy, rtol = it_rtol)
+    @test isapprox(actual.Izz, expected.Izz, rtol = it_rtol)
+    @test isapprox(actual.Ixy, expected.Ixy, rtol = it_rtol)
+    @test isapprox(actual.Ixz, expected.Ixz, rtol = it_rtol)
+    @test isapprox(actual.Iyz, expected.Iyz, rtol = it_rtol)
+
+    @test actual.POIconv == expected.POIconv
+    @test actual.Ipoint == expected.Ipoint
+
+    sigma_m_rtol = 1e-5
+    @test isapprox(actual.sigma_mass, expected.sigma_mass, rtol = sigma_m_rtol)
+
+    sigma_cm_rtol = 5e-2
+    @test isapprox(actual.sigma_Cx, expected.sigma_Cx, rtol = sigma_cm_rtol)
+    @test isapprox(actual.sigma_Cy, expected.sigma_Cy, rtol = sigma_cm_rtol)
+    @test isapprox(actual.sigma_Cz, expected.sigma_Cz, rtol = sigma_cm_rtol)
+
+    sigma_it_rtol = 5e-2
+    @test isapprox(actual.sigma_Ixx, expected.sigma_Ixx, rtol = sigma_it_rtol)
+    @test isapprox(actual.sigma_Iyy, expected.sigma_Iyy, rtol = sigma_it_rtol)
+    @test isapprox(actual.sigma_Izz, expected.sigma_Izz, rtol = sigma_it_rtol)
+    @test isapprox(actual.sigma_Ixy, expected.sigma_Ixy, rtol = sigma_it_rtol)
+    @test isapprox(actual.sigma_Ixz, expected.sigma_Ixz, rtol = sigma_it_rtol)
+    @test isapprox(actual.sigma_Iyz, expected.sigma_Iyz, rtol = sigma_it_rtol)
+
+end

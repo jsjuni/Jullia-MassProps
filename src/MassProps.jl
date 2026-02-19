@@ -171,6 +171,29 @@ module MassProps
         )
     end
 
+    update_mass_props_unc(df, target, sources) = begin
+        RollupTree.update_prop(
+            df,
+            target,
+            sources,
+            set_mass_props_unc,
+            get_mass_props_and_unc,
+            l -> combine_mass_props_unc(l, get_mass_props(df, target))
+        )
+    end
+
+    update_mass_props_and_unc(df, target, sources, override = set_poi_conv_from_target) = begin
+           RollupTree.update_prop(
+            df,
+            target,
+            sources,
+            set_mass_props_and_unc,
+            get_mass_props_and_unc,
+            combine_mass_props_and_unc,
+            override
+        )
+    end
+
     validate_mass_props(mp) = true
 
     validate_mass_props_unc(mpu) = true
@@ -183,6 +206,6 @@ module MassProps
 
     rollup_mass_props(tree, df, validate_df = validate_mass_props_table) = RollupTree.rollup(tree, df, update_mass_props, validate_df)
 
-    rollup_mass_props_and_unc(tree, df, validate_df = validate_mass_props_and_unc_table) = RollupTree.rollup_tree(tree, df, update_mass_props_and_unc, validate_df)
+    rollup_mass_props_and_unc(tree, df, validate_df = validate_mass_props_and_unc_table) = RollupTree.rollup(tree, df, update_mass_props_and_unc, validate_df)
 
 end
