@@ -444,12 +444,12 @@ end
 
     @test actual.mass == expected.mass
 
-    cm_rtol = 5e-2
+    cm_rtol = 2e-2
     @test isapprox(actual.Cx, expected.Cx, rtol = cm_rtol)
     @test isapprox(actual.Cy, expected.Cy, rtol = cm_rtol)
     @test isapprox(actual.Cz, expected.Cz, rtol = cm_rtol)
 
-    it_rtol = 5e-2
+    it_rtol = 2e-2
     @test isapprox(actual.Ixx, expected.Ixx, rtol = it_rtol)
     @test isapprox(actual.Iyy, expected.Iyy, rtol = it_rtol)
     @test isapprox(actual.Izz, expected.Izz, rtol = it_rtol)
@@ -463,12 +463,12 @@ end
     sigma_m_rtol = 1e-5
     @test isapprox(actual.sigma_mass, expected.sigma_mass, rtol = sigma_m_rtol)
 
-    sigma_cm_rtol = 5e-2
+    sigma_cm_rtol = 2e-2
     @test isapprox(actual.sigma_Cx, expected.sigma_Cx, rtol = sigma_cm_rtol)
     @test isapprox(actual.sigma_Cy, expected.sigma_Cy, rtol = sigma_cm_rtol)
     @test isapprox(actual.sigma_Cz, expected.sigma_Cz, rtol = sigma_cm_rtol)
 
-    sigma_it_rtol = 5e-2
+    sigma_it_rtol = 2e-2
     @test isapprox(actual.sigma_Ixx, expected.sigma_Ixx, rtol = sigma_it_rtol)
     @test isapprox(actual.sigma_Iyy, expected.sigma_Iyy, rtol = sigma_it_rtol)
     @test isapprox(actual.sigma_Izz, expected.sigma_Izz, rtol = sigma_it_rtol)
