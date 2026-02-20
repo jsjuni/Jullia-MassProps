@@ -399,13 +399,29 @@ end
     @test MassProps.validate_mass_props(mp_pos) == true
 
     mp_invalid_mass = merge(mp_valid, (mass = -1.0,))
-    # @test_throws ErrorException MassProps.validate_mass_props(mp_invalid_mass)
+    @test_throws ErrorException MassProps.validate_mass_props(mp_invalid_mass)
 
     mp_invalid_inertia = merge(mp_valid, (inertia = [1.0 0.0 0.0; 0.0 -1.0 0.0; 0.0 0.0 1.0],))
-    # @test_throws ErrorException MassProps.validate_mass_props(mp_invalid_inertia)
+    @test_throws ErrorException MassProps.validate_mass_props(mp_invalid_inertia)
 
     mp_invalid_poi_conv = merge(mp_valid, (poi_conv = "invalid",))
-    # @test_throws ErrorException MassProps.validate_mass_props(mp_invalid_poi_conv)
+    @test_throws ErrorException MassProps.validate_mass_props(mp_invalid_poi_conv)
+
+end
+
+@testitem "validate_mass_props_unc()" setup = [Setup] begin
+
+    mpu_valid = mpu_pos
+    @test MassProps.validate_mass_props_unc(mpu_pos) == true
+
+    mpu_invalid_mass = merge(mpu_valid, (sigma_mass = -1.0,))
+    @test_throws ErrorException MassProps.validate_mass_props_unc(mpu_invalid_mass)
+
+    mpu_invalid_center_mass = merge(mpu_valid, (sigma_center_mass = [0.01, -0.01, 0.01],))
+    @test_throws ErrorException MassProps.validate_mass_props_unc(mpu_invalid_center_mass)
+
+    mpu_invalid_inertia = merge(mpu_valid, (sigma_inertia = [1.0 0.0 0.0; 0.0 -1.0 0.0; 0.0 0.0 1.0],))
+    @test_throws ErrorException MassProps.validate_mass_props_unc(mpu_invalid_inertia)
 
 end
 
@@ -432,6 +448,48 @@ end
     @test top_row.POIconv == "-"
 
     @test top_row.Ipoint == false
+
+end
+
+@testitem "rollup_mass_props_unc()" setup = [Setup] begin
+
+    expected = sawe_table[findfirst(sawe_table.id .== "Combined"), :]
+
+    mp = MassProps.rollup_mass_props_unc(sawe_tree, sawe_table)
+    @test mp isa DataFrame
+
+    top_row = mp[findfirst(mp.id .== "Combined"), :]
+
+    # the following shoule be unchanged and exact matches
+    
+    @test top_row.mass == expected.mass
+
+    @test top_row.Cx == expected.Cx
+    @test top_row.Cy == expected.Cy
+    @test top_row.Cz == expected.Cz
+
+    @test top_row.Ixx == expected.Ixx
+    @test top_row.Iyy == expected.Iyy
+    @test top_row.Izz == expected.Izz
+    @test top_row.Ixy == expected.Ixy
+    @test top_row.Ixz == expected.Ixz
+    @test top_row.Iyz == expected.Iyz
+
+    sigma_mass_rtol = 1e-5
+    @test isapprox(top_row.sigma_mass, expected.sigma_mass, rtol = sigma_mass_rtol)
+
+    sigma_center_mass = 2e-2
+    @test isapprox(top_row.sigma_Cx, expected.sigma_Cx, rtol = sigma_center_mass)
+    @test isapprox(top_row.sigma_Cy, expected.sigma_Cy, rtol = sigma_center_mass)
+    @test isapprox(top_row.sigma_Cz, expected.sigma_Cz, rtol = sigma_center_mass)
+
+    sigma_it_rtol = 2e-2
+    @test isapprox(top_row.sigma_Ixx, expected.sigma_Ixx, rtol = sigma_it_rtol)
+    @test isapprox(top_row.sigma_Iyy, expected.sigma_Iyy, rtol = sigma_it_rtol)
+    @test isapprox(top_row.sigma_Izz, expected.sigma_Izz, rtol = sigma_it_rtol)
+    @test isapprox(top_row.sigma_Ixy, expected.sigma_Ixy, rtol = sigma_it_rtol)
+    @test isapprox(top_row.sigma_Ixz, expected.sigma_Ixz, rtol = sigma_it_rtol)
+    @test isapprox(top_row.sigma_Iyz, expected.sigma_Iyz, rtol = sigma_it_rtol)
 
 end
 

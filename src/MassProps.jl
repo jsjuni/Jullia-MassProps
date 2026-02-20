@@ -228,7 +228,26 @@ module MassProps
 
     end
 
-    validate_mass_props_unc(mpu) = true
+    validate_mass_props_unc(mpu) = begin
+
+        mpu.sigma_mass isa Real || error("mass uncertainty must be a real number")
+        mpu.sigma_mass >= 0.0 || error("mass uncertainty must be non-negative")
+
+        any(ismissing.(mpu.sigma_center_mass)) && error("center mass uncertainty component is missing")
+        any(isnothing.(mpu.sigma_center_mass)) && error("center mass uncertainty component is nothing")
+        mpu.sigma_center_mass isa AbstractVector{<:Real} || error("center mass uncertainty must be a vector of real numbers")
+        length(mpu.sigma_center_mass) == 3 || error("center mass uncertainty must have three components")
+        any(mpu.sigma_center_mass .< 0.0) && error("center mass uncertainty must be non-negative")
+
+        any(ismissing.(mpu.sigma_inertia)) && error("inertia uncertainty component is missing")
+        any(isnothing.(mpu.sigma_inertia)) && error("inertia uncertainty component is nothing")
+        mpu.sigma_inertia isa AbstractMatrix{<:Real} || error("inertia uncertainty must be a matrix of real numbers")
+        size(mpu.sigma_inertia) == (3, 3) || error("inertia uncertainty must be a 3x3 matrix")
+        any(mpu.sigma_inertia .< 0.0) && error("inertia uncertainty must be non-negative")
+
+        return true
+        
+    end
 
     validate_mass_props_and_unc(mpu) = validate_mass_props(mpu) && validate_mass_props_unc(mpu)
 
