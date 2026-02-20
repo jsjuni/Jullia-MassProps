@@ -194,7 +194,39 @@ module MassProps
         )
     end
 
-    validate_mass_props(mp) = true
+    validate_mass_props(mp) = begin
+        
+        ismissing(mp.mass) && error("mass is missing")
+        isnothing(mp.mass) && error("mass is nothing")
+        mp.mass isa Real || error("mass must be a real number")
+        mp.mass > 0.0 || error("mass must be positive")
+
+        any(ismissing.(mp.center_mass)) && error("center mass component is missing")
+        any(isnothing.(mp.center_mass)) && error("center mass component is nothing")
+        mp.center_mass isa AbstractVector{<:Real} || error("center mass must be a vector of real numbers")
+        length(mp.center_mass) == 3 || error("center mass must have three components")
+
+        any(ismissing.(mp.inertia)) && error("inertia component is missing")
+        any(isnothing.(mp.inertia)) && error("inertia component is nothing")
+        mp.inertia isa AbstractMatrix{<:Real} || error("inertia must be a matrix of real numbers")
+        size(mp.inertia) == (3, 3) || error("inertia must be a 3x3 matrix")
+
+        ev = eigen(mp.inertia)
+        all(isreal.(ev.values)) || error("inertia matrix must have real eigenvalues")
+        any(ev.values .<= 0.0) && error("inertia matrix must be positive definite")
+        all([
+            ev.values[1] <= ev.values[2] + ev.values[3],
+            ev.values[2] <= ev.values[1] + ev.values[3],
+            ev.values[3] <= ev.values[1] + ev.values[2]
+        ]) || error("inertia matrix must satisfy triangle inequalities")
+
+        mp.poi_conv in ("+", "-") || error("POI convention must be '+' or '-'")
+
+        mp.point isa Bool || error("point must be a boolean")
+
+        return true
+
+    end
 
     validate_mass_props_unc(mpu) = true
 
@@ -205,6 +237,8 @@ module MassProps
     validate_mass_props_and_unc_table(tree, df) = RollupTree.validate_ds(tree, df, RollupTree.df_get_ids, get_mass_props_and_unc, validate_mass_props_and_unc)
 
     rollup_mass_props(tree, df, validate_df = validate_mass_props_table) = RollupTree.rollup(tree, df, update_mass_props, validate_df)
+
+    rollup_mass_props_unc(tree, df, validate_df = validate_mass_props_and_unc_table) = RollupTree.rollup(tree, df, update_mass_props_unc, validate_df)
 
     rollup_mass_props_and_unc(tree, df, validate_df = validate_mass_props_and_unc_table) = RollupTree.rollup(tree, df, update_mass_props_and_unc, validate_df)
 
