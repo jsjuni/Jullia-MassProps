@@ -17,8 +17,7 @@ module MassProps
                        poi_factor * row.Ixz poi_factor * row.Iyz              row.Izz
             ],
 
-            poi_conv = row.POIconv,
-            point = row.Ipoint
+           point = row.Ipoint
         )
 
     end
@@ -220,8 +219,6 @@ module MassProps
             ev.values[3] <= ev.values[1] + ev.values[2]
         ]) || error("inertia matrix must satisfy triangle inequalities")
 
-        mp.poi_conv in ("+", "-") || error("POI convention must be '+' or '-'")
-
         mp.point isa Bool || error("point must be a boolean")
 
         return true
@@ -246,7 +243,7 @@ module MassProps
         any(mpu.sigma_inertia .< 0.0) && error("inertia uncertainty must be non-negative")
 
         return true
-        
+
     end
 
     validate_mass_props_and_unc(mpu) = validate_mass_props(mpu) && validate_mass_props_unc(mpu)

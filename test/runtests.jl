@@ -113,9 +113,6 @@ end
     @test result.center_mass isa Vector{Float64}
     @test result.center_mass == center_mass_pos
 
-    @test result.poi_conv == poi_conv_pos
-    @test result.poi_conv == "+"
-
     @test result.point == point_pos
 
     @test result.inertia isa Matrix{Float64}
@@ -133,9 +130,6 @@ end
 
     @test result.center_mass isa Vector{Float64}
     @test result.center_mass == center_mass_neg
-
-    @test result.poi_conv == poi_conv_neg
-    @test result.poi_conv == "-"
 
     @test result.point == point_neg
 
@@ -403,9 +397,6 @@ end
 
     mp_invalid_inertia = merge(mp_valid, (inertia = [1.0 0.0 0.0; 0.0 -1.0 0.0; 0.0 0.0 1.0],))
     @test_throws ErrorException MassProps.validate_mass_props(mp_invalid_inertia)
-
-    mp_invalid_poi_conv = merge(mp_valid, (poi_conv = "invalid",))
-    @test_throws ErrorException MassProps.validate_mass_props(mp_invalid_poi_conv)
 
 end
 
