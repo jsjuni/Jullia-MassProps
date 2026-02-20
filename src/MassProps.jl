@@ -96,11 +96,12 @@ module MassProps
 
         center_mass = sum(mp.mass .* mp.center_mass for mp in mpl) ./ mass
 
-        inertia = sum(mp.inertia .+ mp.mass .* (dot(mp.center_mass, mp.center_mass) * I - mp.center_mass * transpose(mp.center_mass)) for mp in mpl)
         inertia = sum(
             map(mp -> begin
                 d = mp.center_mass - center_mass
-                mp.inertia .+ mp.mass .* (dot(d, d) * I - d * transpose(d))
+                Q = d .* d'
+                M = mp.mass .* (tr(Q) * I - Q)
+                mp.point ? M : mp.inertia .+ M
             end, mpl)
         )
 
