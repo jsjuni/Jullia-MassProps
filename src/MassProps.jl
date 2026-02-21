@@ -3,14 +3,24 @@ module MassProps
     using RollupTree
     using LinearAlgebra
 
-    X = 1
-    Y = 2
-    Z = 3
+    const X = 1
+    const Y = 2
+    const Z = 3
 
-    get_mass_props(table, id) = begin
+    # These matrices are used in the computation of inertia tensor uncertainty.
+
+    const T1 = [ 1 -2  0;
+                -2  1  0;
+                -2  0  1]
+
+    const T2 = [ 1  0 -2;
+                 0  1 -2;
+                 0 -2  1] 
+
+   get_mass_props(table, id) = begin
         row = RollupTree.df_get_row_by_id(table, id)
         poi_factor = row.POIconv == "-" ? 1.0 : -1.0
- 
+
         (
             mass = row.mass,
 
@@ -138,8 +148,8 @@ module MassProps
                     p = diag(P)
                     Q = d .* d'
 
-                    M1 = P  - diagm(p - 2 .* view(p, [Y; X; X]))
-                    M2 = P' - diagm(p - 2 .* view(p, [Z; Z; Y]))
+                    M1 = P  - diagm(T1 * p)
+                    M2 = P' - diagm(T2 * p)
                     M3 = Q  - tr(Q) * I
                     M4 = mpu.mass^2 .* (M1.^2 .+ M2.^2) .+ (mpu.sigma_mass .* M3).^2
                     mpu.point ? M4 : mpu.sigma_inertia.^2 .+ M4
