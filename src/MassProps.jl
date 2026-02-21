@@ -3,6 +3,10 @@ module MassProps
     using RollupTree
     using LinearAlgebra
 
+    X = 1
+    Y = 2
+    Z = 3
+
     get_mass_props(table, id) = begin
         row = RollupTree.df_get_row_by_id(table, id)
         poi_factor = row.POIconv == "-" ? 1.0 : -1.0
@@ -49,17 +53,17 @@ module MassProps
         values = (
             mass = mp.mass,
 
-            Cx = cm[1],
-            Cy = cm[2],
-            Cz = cm[3],
+            Cx = cm[X],
+            Cy = cm[Y],
+            Cz = cm[Z],
 
-            Ixx = it[1, 1],
-            Iyy = it[2, 2],
-            Izz = it[3, 3],
+            Ixx = it[X, X],
+            Iyy = it[Y, Y],
+            Izz = it[Z, Z],
 
-            Ixy = poi_factor * it[1, 2],
-            Ixz = poi_factor * it[1, 3],
-            Iyz = poi_factor * it[2, 3],
+            Ixy = poi_factor * it[X, Y],
+            Ixz = poi_factor * it[X, Z],
+            Iyz = poi_factor * it[Y, Z],
 
             Ipoint = mp.point,
             POIconv = mp.poi_conv
@@ -72,17 +76,17 @@ module MassProps
         values = (
             sigma_mass = mp_unc.sigma_mass,
 
-            sigma_Cx = mp_unc.sigma_center_mass[1],
-            sigma_Cy = mp_unc.sigma_center_mass[2],
-            sigma_Cz = mp_unc.sigma_center_mass[3],
+            sigma_Cx = mp_unc.sigma_center_mass[X],
+            sigma_Cy = mp_unc.sigma_center_mass[Y],
+            sigma_Cz = mp_unc.sigma_center_mass[Z],
 
-            sigma_Ixx = mp_unc.sigma_inertia[1, 1],
-            sigma_Iyy = mp_unc.sigma_inertia[2, 2],
-            sigma_Izz = mp_unc.sigma_inertia[3, 3],
+            sigma_Ixx = mp_unc.sigma_inertia[X, X],
+            sigma_Iyy = mp_unc.sigma_inertia[Y, Y],
+            sigma_Izz = mp_unc.sigma_inertia[Z, Z],
 
-            sigma_Ixy = mp_unc.sigma_inertia[1, 2],
-            sigma_Ixz = mp_unc.sigma_inertia[1, 3],
-            sigma_Iyz = mp_unc.sigma_inertia[2, 3]
+            sigma_Ixy = mp_unc.sigma_inertia[X, Y],
+            sigma_Ixz = mp_unc.sigma_inertia[X, Z],
+            sigma_Iyz = mp_unc.sigma_inertia[Y, Z]
         )
 
         RollupTree.df_set_row_by_id(table, id, values)
@@ -134,8 +138,8 @@ module MassProps
                     p = diag(P)
                     Q = d .* d'
 
-                    M1 = P  - diagm(p - 2 .* [p[2]; p[1]; p[1]])
-                    M2 = P' - diagm(p - 2 .* [p[3]; p[3]; p[2]])
+                    M1 = P  - diagm(p - 2 .* view(p, [Y; X; X]))
+                    M2 = P' - diagm(p - 2 .* view(p, [Z; Z; Y]))
                     M3 = Q  - tr(Q) * I
                     M4 = mpu.mass^2 .* (M1.^2 .+ M2.^2) .+ (mpu.sigma_mass .* M3).^2
                     mpu.point ? M4 : mpu.sigma_inertia.^2 .+ M4
