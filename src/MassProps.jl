@@ -3,6 +3,16 @@ module MassProps
     using RollupTree
     using LinearAlgebra
 
+    export get_mass_props, get_mass_props_unc, get_mass_props_and_unc,
+            set_mass_props, set_mass_props_unc, set_mass_props_and_unc,
+            combine_mass_props, combine_mass_props_unc, combine_mass_props_and_unc,
+            set_poi_conv_plus, set_poi_conv_minus, set_poi_conv_from_target,
+            update_mass_props, update_mass_props_unc, update_mass_props_and_unc,
+            validate_mass_props, validate_mass_props_unc, validate_mass_props_and_unc,
+            validate_mass_props_table, validate_mass_props_and_unc_table,
+            rollup_mass_props, rollup_mass_props_unc, rollup_mass_props_and_unc,
+            X, Y, Z
+
     const X = 1
     const Y = 2
     const Z = 3
@@ -18,7 +28,7 @@ module MassProps
                  0 -2  1] 
 
    get_mass_props(table, id) = begin
-        row = RollupTree.df_get_row_by_id(table, id)
+        row = df_get_row_by_id(table, id)
         poi_factor = row.POIconv == "-" ? 1.0 : -1.0
 
         (
@@ -37,7 +47,7 @@ module MassProps
     end
 
     get_mass_props_unc(table, id) = begin
-        row = RollupTree.df_get_row_by_id(table, id)
+        row = df_get_row_by_id(table, id)
 
         (
             sigma_mass = row.sigma_mass,
@@ -79,7 +89,7 @@ module MassProps
             POIconv = mp.poi_conv
         )
 
-        RollupTree.df_set_row_by_id(table, id, values)
+        df_set_row_by_id(table, id, values)
     end
 
     set_mass_props_unc(table, id, mp_unc) = begin
@@ -99,7 +109,7 @@ module MassProps
             sigma_Iyz = mp_unc.sigma_inertia[Y, Z]
         )
 
-        RollupTree.df_set_row_by_id(table, id, values)
+        df_set_row_by_id(table, id, values)
     end
 
     set_mass_props_and_unc(table, id, mpu) = set_mass_props_unc(set_mass_props(table, id, mpu), id, mpu)
@@ -171,10 +181,10 @@ module MassProps
 
     set_poi_conv_plus(df, target, mp) = merge(mp, (poi_conv = "+",))
     set_poi_conv_minus(df, target, mp) = merge(mp, (poi_conv = "-",))
-    set_poi_conv_from_target(df, target, mp) = merge(mp, (poi_conv = RollupTree.df_get_by_id(df, target, :POIconv),))
+    set_poi_conv_from_target(df, target, mp) = merge(mp, (poi_conv = df_get_by_id(df, target, :POIconv),))
 
     update_mass_props(df, target, sources, override = set_poi_conv_from_target) = begin
-        RollupTree.update_prop(
+        update_prop(
             df,
             target,
             sources,
@@ -186,7 +196,7 @@ module MassProps
     end
 
     update_mass_props_unc(df, target, sources) = begin
-        RollupTree.update_prop(
+        update_prop(
             df,
             target,
             sources,
@@ -197,7 +207,7 @@ module MassProps
     end
 
     update_mass_props_and_unc(df, target, sources, override = set_poi_conv_from_target) = begin
-           RollupTree.update_prop(
+           update_prop(
             df,
             target,
             sources,
@@ -263,14 +273,14 @@ module MassProps
 
     validate_mass_props_and_unc(mpu) = validate_mass_props(mpu) && validate_mass_props_unc(mpu)
 
-    validate_mass_props_table(tree, df) = RollupTree.validate_ds(tree, df, RollupTree.df_get_ids, get_mass_props, validate_mass_props)
+    validate_mass_props_table(tree, df) = validate_ds(tree, df, df_get_ids, get_mass_props, validate_mass_props)
 
-    validate_mass_props_and_unc_table(tree, df) = RollupTree.validate_ds(tree, df, RollupTree.df_get_ids, get_mass_props_and_unc, validate_mass_props_and_unc)
+    validate_mass_props_and_unc_table(tree, df) = validate_ds(tree, df, df_get_ids, get_mass_props_and_unc, validate_mass_props_and_unc)
 
-    rollup_mass_props(tree, df, validate_df = validate_mass_props_table) = RollupTree.rollup(tree, df, update_mass_props, validate_df)
+    rollup_mass_props(tree, df, validate_df = validate_mass_props_table) = rollup(tree, df, update_mass_props, validate_df)
 
-    rollup_mass_props_unc(tree, df, validate_df = validate_mass_props_and_unc_table) = RollupTree.rollup(tree, df, update_mass_props_unc, validate_df)
+    rollup_mass_props_unc(tree, df, validate_df = validate_mass_props_and_unc_table) = rollup(tree, df, update_mass_props_unc, validate_df)
 
-    rollup_mass_props_and_unc(tree, df, validate_df = validate_mass_props_and_unc_table) = RollupTree.rollup(tree, df, update_mass_props_and_unc, validate_df)
+    rollup_mass_props_and_unc(tree, df, validate_df = validate_mass_props_and_unc_table) = rollup(tree, df, update_mass_props_and_unc, validate_df)
 
 end
