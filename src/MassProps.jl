@@ -83,6 +83,9 @@ module MassProps
     end
 
     set_mass_props_unc(table, id, mp_unc) = begin
+
+        sigma_it = (mp_unc.sigma_inertia + mp_unc.sigma_inertia') / 2 # ensure symmetry
+        
         values = (
             sigma_mass = mp_unc.sigma_mass,
 
@@ -90,13 +93,13 @@ module MassProps
             sigma_Cy = mp_unc.sigma_center_mass[Y],
             sigma_Cz = mp_unc.sigma_center_mass[Z],
 
-            sigma_Ixx = mp_unc.sigma_inertia[X, X],
-            sigma_Iyy = mp_unc.sigma_inertia[Y, Y],
-            sigma_Izz = mp_unc.sigma_inertia[Z, Z],
+            sigma_Ixx = sigma_it[X, X],
+            sigma_Iyy = sigma_it[Y, Y],
+            sigma_Izz = sigma_it[Z, Z],
 
-            sigma_Ixy = mp_unc.sigma_inertia[X, Y],
-            sigma_Ixz = mp_unc.sigma_inertia[X, Z],
-            sigma_Iyz = mp_unc.sigma_inertia[Y, Z]
+            sigma_Ixy = sigma_it[X, Y],
+            sigma_Ixz = sigma_it[X, Z],
+            sigma_Iyz = sigma_it[Y, Z]
         )
 
         df_set_row_by_id(table, id, values)
