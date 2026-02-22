@@ -56,7 +56,7 @@ module MassProps
     set_mass_props(table, id, mp) = begin
         
         cm = mp.center_mass
-        it = (mp.inertia + transpose(mp.inertia)) / 2
+        it = (mp.inertia + mp.inertia') / 2 # ensure symmetry
 
         poi_factor = mp.poi_conv == "+" ? -1.0 : (mp.poi_conv == "-" ? 1.0 : error("invalid POI convention"))
 
