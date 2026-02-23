@@ -183,8 +183,8 @@ module MassProps
             sources,
             set_mass_props,
             get_mass_props,
-            combine_mass_props,
-            override
+            combine = combine_mass_props,
+            override = override
         )
     end
 
@@ -195,7 +195,7 @@ module MassProps
             sources,
             set_mass_props_unc,
             get_mass_props_and_unc,
-            l -> combine_mass_props_unc(l, get_mass_props(df, target))
+            combine = l -> combine_mass_props_unc(l, get_mass_props(df, target))
         )
     end
 
@@ -206,8 +206,8 @@ module MassProps
             sources,
             set_mass_props_and_unc,
             get_mass_props_and_unc,
-            combine_mass_props_and_unc,
-            override
+            combine = combine_mass_props_and_unc,
+            override = override
         )
     end
 
