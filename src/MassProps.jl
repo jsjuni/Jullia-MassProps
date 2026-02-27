@@ -108,62 +108,57 @@ module MassProps
 
     function combine_mass_props(mpl)
         
-        mass = sum(mp.mass for mp in mpl)
-
-        center_mass = sum(mp.mass .* mp.center_mass for mp in mpl) ./ mass
-
-        inertia = sum(
-            map(mp -> begin
-                d = mp.center_mass - center_mass
-                Q = d .* d'
-                M = mp.mass .* (tr(Q) * I - Q)
-                mp.point ? M : mp.inertia .+ M
-            end, mpl)
-        )
-
         (
-            mass = mass,
-            center_mass = center_mass,
-            inertia = inertia,
+            mass = (mass = sum(mp.mass for mp in mpl)),
+
+            center_mass = (center_mass = sum(mp.mass .* mp.center_mass for mp in mpl) ./ mass),
+
+            inertia = sum(
+                map(mp -> begin
+                    d = mp.center_mass - center_mass
+                    Q = d .* d'
+                    M = mp.mass .* (tr(Q) * I - Q)
+                    mp.point ? M : mp.inertia .+ M
+                end, mpl)
+            ),
+
             point = false
+
         )
-    end
+
+  end
 
     function combine_mass_props_unc(mpul, amp)
 
-        sigma_mass = sqrt(sum(mpu.sigma_mass^2 for mpu in mpul))
-
-        sigma_center_mass = sqrt.(
-            sum(
-                (
-                    (mpu.mass .* mpu.sigma_center_mass).^2 .+
-                    (mpu.sigma_mass .* (mpu.center_mass - amp.center_mass)).^2
-                ) for mpu in mpul
-            )
-        ) ./ amp.mass
-
-        sigma_inertia = sqrt.(
-            sum(
-                map(mpu -> begin
-                    d = mpu.center_mass - amp.center_mass
-                    P = d .* mpu.sigma_center_mass'
-                    p = diag(P)
-                    Q = d .* d'
-
-                    M1 = P  - diagm(p - 2 .* view(p, [Y, X, X]))
-                    M2 = P' - diagm(p - 2 .* view(p, [Z, Z, Y]))
-                    M3 = Q  - tr(Q) * I
-                    M4 = mpu.mass^2 .* (M1.^2 .+ M2.^2) .+ (mpu.sigma_mass .* M3).^2
-                    mpu.point ? M4 : mpu.sigma_inertia.^2 .+ M4
-                end, mpul)
-            )
-        )
-
-        merge(amp,
+        return merge(amp,
             (
-                sigma_mass = sigma_mass,
-                sigma_center_mass = sigma_center_mass,
-                sigma_inertia = sigma_inertia
+                sigma_mass = (sigma_mass = sqrt(sum(mpu.sigma_mass^2 for mpu in mpul))),
+
+                sigma_center_mass = (sigma_center_mass = sqrt.(
+                    sum(
+                        (
+                            (mpu.mass .* mpu.sigma_center_mass).^2 .+
+                            (mpu.sigma_mass .* (mpu.center_mass - amp.center_mass)).^2
+                        ) for mpu in mpul
+                    )
+                ) ./ amp.mass),
+
+                sigma_inertia = sqrt.(
+                    sum(
+                        map(mpu -> begin
+                            d = mpu.center_mass - amp.center_mass
+                            P = d .* mpu.sigma_center_mass'
+                            p = diag(P)
+                            Q = d .* d'
+
+                            M1 = P  - diagm(p - 2 .* view(p, [Y, X, X]))
+                            M2 = P' - diagm(p - 2 .* view(p, [Z, Z, Y]))
+                            M3 = Q  - tr(Q) * I
+                            M4 = mpu.mass^2 .* (M1.^2 .+ M2.^2) .+ (mpu.sigma_mass .* M3).^2
+                            mpu.point ? M4 : mpu.sigma_inertia.^2 .+ M4
+                        end, mpul)
+                    )
+                )
             )
         )
 
