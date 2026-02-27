@@ -17,7 +17,7 @@ module MassProps
     const Y = 2
     const Z = 3
 
-    get_mass_props(table, id) = begin
+    function get_mass_props(table, id)
         row = df_get_row_by_id(table, id)
         poi_factor = row.POIconv == "-" ? 1.0 : -1.0
 
@@ -33,10 +33,9 @@ module MassProps
 
            point = row.Ipoint
         )
-
     end
 
-    get_mass_props_unc(table, id) = begin
+    function get_mass_props_unc(table, id)
         row = df_get_row_by_id(table, id)
 
         (
@@ -53,7 +52,7 @@ module MassProps
 
     get_mass_props_and_unc(table, id) = merge(get_mass_props(table, id), get_mass_props_unc(table, id))
 
-    set_mass_props(table, id, mp) = begin
+    function set_mass_props(table, id, mp)
         
         cm = mp.center_mass
         it = (mp.inertia + mp.inertia') / 2 # ensure symmetry
@@ -82,7 +81,7 @@ module MassProps
         df_set_row_by_id(table, id, values)
     end
 
-    set_mass_props_unc(table, id, mp_unc) = begin
+    function set_mass_props_unc(table, id, mp_unc)
 
         sigma_it = (mp_unc.sigma_inertia + mp_unc.sigma_inertia') / 2 # ensure symmetry
         
@@ -107,7 +106,7 @@ module MassProps
 
     set_mass_props_and_unc(table, id, mpu) = set_mass_props_unc(set_mass_props(table, id, mpu), id, mpu)
 
-    combine_mass_props(mpl) = begin
+    function combine_mass_props(mpl)
         
         mass = sum(mp.mass for mp in mpl)
 
@@ -130,7 +129,7 @@ module MassProps
         )
     end
 
-    combine_mass_props_unc(mpul, amp) = begin
+    function combine_mass_props_unc(mpul, amp)
 
         sigma_mass = sqrt(sum(mpu.sigma_mass^2 for mpu in mpul))
 
@@ -176,7 +175,7 @@ module MassProps
     set_poi_conv_minus(df, target, mp) = merge(mp, (poi_conv = "-",))
     set_poi_conv_from_target(df, target, mp) = merge(mp, (poi_conv = df_get_by_id(df, target, :POIconv),))
 
-    update_mass_props(df, target, sources, override = set_poi_conv_from_target) = begin
+    function update_mass_props(df, target, sources, override = set_poi_conv_from_target)
         update_prop(
             df,
             target,
@@ -188,7 +187,7 @@ module MassProps
         )
     end
 
-    update_mass_props_unc(df, target, sources) = begin
+    function update_mass_props_unc(df, target, sources)
         update_prop(
             df,
             target,
@@ -199,7 +198,7 @@ module MassProps
         )
     end
 
-    update_mass_props_and_unc(df, target, sources, override = set_poi_conv_from_target) = begin
+    function update_mass_props_and_unc(df, target, sources, override = set_poi_conv_from_target)
            update_prop(
             df,
             target,
@@ -211,7 +210,7 @@ module MassProps
         )
     end
 
-    validate_mass_props(mp) = begin
+    function validate_mass_props(mp)
         
         ismissing(mp.mass) && error("mass is missing")
         isnothing(mp.mass) && error("mass is nothing")
@@ -243,7 +242,7 @@ module MassProps
 
     end
 
-    validate_mass_props_unc(mpu) = begin
+    function validate_mass_props_unc(mpu)
 
         mpu.sigma_mass isa Real || error("mass uncertainty must be a real number")
         mpu.sigma_mass >= 0.0 || error("mass uncertainty must be non-negative")
