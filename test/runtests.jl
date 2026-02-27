@@ -11,7 +11,7 @@ using MassProps
 
     data_dir = artifact"mass_props_data"
 
-    read_data(filename) = CSV.read(joinpath(data_dir, filename), DataFrame; missingstring = "NA",delim = "\t")
+    read_data(filename) = CSV.read(joinpath(data_dir, filename), DataFrame; missingstring = "NA", delim = "\t")
 
     tree_from_edgelist(el, id, pid) = begin
         tree = MetaGraphsNext.MetaGraph(Graphs.SimpleDiGraph(), label_type = String)
