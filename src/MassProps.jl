@@ -136,10 +136,9 @@ module MassProps
 
                 sigma_center_mass = (sigma_center_mass = sqrt.(
                     sum(
-                        (
-                            (mpu.mass .* mpu.sigma_center_mass).^2 .+
-                            (mpu.sigma_mass .* (mpu.center_mass - amp.center_mass)).^2
-                        ) for mpu in mpul
+                        (mpu.mass .* mpu.sigma_center_mass).^2 .+
+                        (mpu.sigma_mass .* (mpu.center_mass - amp.center_mass)).^2
+                        for mpu in mpul
                     )
                 ) ./ amp.mass),
 
